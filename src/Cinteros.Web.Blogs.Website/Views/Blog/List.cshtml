@@ -31,7 +31,7 @@
     <span class="post-info-label">Under:&nbsp;</span>
     foreach(var tag in tags) {
         bool isLast = (tag == tags.Last());
-            @Html.RouteLink(tag, "Tag", new { t = Url.Encode(tag.ToLowerInvariant()), })
+            @Html.RouteLink(tag, "Tag", new { t = Url.Encode(tag.ToLowerInvariant()) })
         if(!isLast) {
                 <text>&nbsp;|&nbsp;</text>
         }
@@ -48,12 +48,12 @@
         <div class="post-head">
             <div class="post-head-left">
                 <h2 class="post-title">
-                    <a href="@post.OriginalBloggerUrl">@post.Title</a>
+                    <a href="@post.DataSourceUrl">@post.Title</a>
                 </h2>
                 <div class="clear"></div>
                 <div class="post-info">
                     <span class="post-date post-info-box">
-                        <span class="post-info-label">Postad:&nbsp;</span><span class="post-date-date">@ToLocalDate(post.Published).ToString("yyyy-MM-dd HH:mm")</span>
+                        <span class="post-info-label">Postad:&nbsp;</span><span class="post-date-date">@post.Published.ToString("yyyy-MM-dd hh:mm")</span>
                     </span>
                     <span class="post-author post-info-box">
                         <span class="post-info-label">Av:&nbsp;</span><span class="post-author-name">@post.Author.Name</span>                        
@@ -75,7 +75,7 @@
             <div class="clear"></div>
         </div>
         <div class="post-comment">
-            <a href="@post.OriginalBloggerUrl#comment-form">Läs kommentarer och kommentera på artikeln</a>
+            <a href="@post.DataSourceUrl#comment-form">Läs kommentarer och kommentera på artikeln</a>
         </div>
     </div>
     <div class="clear"></div>

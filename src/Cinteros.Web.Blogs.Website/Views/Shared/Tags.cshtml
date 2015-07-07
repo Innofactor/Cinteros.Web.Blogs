@@ -4,7 +4,7 @@
     @if(Model.Keys.Any()) {
         <ul>
             @foreach(var kvp in Model) {
-            <li>@Html.RouteLink(string.Format("{0} ({1})", kvp.Key, kvp.Value), "Tag", new { t = Url.Encode(kvp.Key.ToLowerInvariant()), })</li>
+            <li>@Html.RouteLink(string.Format("{0} ({1})", kvp.Key, kvp.Value), "Tag", new { t = Url.Encode(kvp.Key.ToLowerInvariant()) })</li>
             }
         </ul>
     }

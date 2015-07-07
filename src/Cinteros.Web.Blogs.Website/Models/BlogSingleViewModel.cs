@@ -1,4 +1,4 @@
-﻿using Blaven;
+﻿using Blogger.DataSource.Model;
 
 namespace Cinteros.Web.Blogs.Website.Models {
     public class BlogSingleViewModel {

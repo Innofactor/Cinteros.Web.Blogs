@@ -1,19 +1,14 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System;
+using System.IO;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
-
-using Blaven;
-using Raven.Client;
-using Raven.Client.Document;
-using System;
 
 namespace Cinteros.Web.Blogs.Website {
     // Note: For instructions on enabling IIS6 or IIS7 classic mode, 
     // visit http://go.microsoft.com/?LinkId=9394801
 
-    public class MvcApplication : System.Web.HttpApplication {
+    public class MvcApplication : HttpApplication {
         public static void RegisterGlobalFilters(GlobalFilterCollection filters) {
             filters.Add(new HandleErrorAttribute());
         }
@@ -81,24 +76,7 @@ namespace Cinteros.Web.Blogs.Website {
                 url: "",
                 defaults: new { controller = "Blog", action = "Index" }
             );
-        }
-
-        private static DateTime _lastUnstaleIndexes;
-        public override string GetVaryByCustomString(HttpContext context, string custom) {
-            if(custom.Equals("RavenDbStaleIndexes", System.StringComparison.InvariantCultureIgnoreCase)) {
-                bool staleIndexes = DocumentStore.DatabaseCommands.GetStatistics().StaleIndexes.Any();
-                if(!staleIndexes) {
-                    _lastUnstaleIndexes = DateTime.Now;
-                    return string.Empty;
-                }
-
-                return string.Format("StaleIndexsFrom_{0}", _lastUnstaleIndexes.Ticks);
-            }
-
-            return base.GetVaryByCustomString(context, custom);
-        }
-
-        public static IDocumentStore DocumentStore { get; set; }
+        }        
 
         protected void Application_Start() {
             AreaRegistration.RegisterAllAreas();
@@ -112,11 +90,13 @@ namespace Cinteros.Web.Blogs.Website {
             SetupBloggerViewController();
         }
 
-        private static void SetupBloggerViewController() {
-            DocumentStore = BlogService.GetDefaultBlogStore();
+        private static void SetupBloggerViewController()
+        {
+
+            //DocumentStore = RavenDbHelper.GetDefaultDocumentStore();
             
-            // Init Blaven config
-            StartWatchConfig(AppSettingsService.BloggerSettingsPath);
+            //// Init Blaven config
+            //StartWatchConfig(AppSettingsService.BloggerSettingsPath);
         }
 
         private static FileSystemWatcher _configWatcher;
@@ -124,7 +104,7 @@ namespace Cinteros.Web.Blogs.Website {
             var fileInfo = new FileInfo(filePath);
             _configWatcher = new FileSystemWatcher(fileInfo.Directory.FullName, fileInfo.Name);
 
-            _configWatcher.Changed += new FileSystemEventHandler(ConfigWatcher_Changed);
+            _configWatcher.Changed += ConfigWatcher_Changed;
             _configWatcher.EnableRaisingEvents = true;
         }
 

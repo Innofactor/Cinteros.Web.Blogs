@@ -8,28 +8,29 @@ using System.Web.Mvc;
 using Cinteros.Web.Blogs.Website.Models;
 using HtmlAgilityPack;
 
-namespace Cinteros.Web.Blogs.Website.Controllers {
-    public class InfoController : BaseController {
-        [OutputCache(Duration = DefaultCacheDuration)]
-        public ActionResult Archive() {
-            var postDates = this.BlogService.GetArchiveCount();
+namespace Cinteros.Web.Blogs.Website.Controllers 
+{
+    public class InfoController : BaseController 
+    {
+
+        public ActionResult Archive() 
+        {
+            var postDates = BlogService.GetArchiveCount();
 
             return PartialView(postDates);
         }
 
         [OutputCache(Duration = DefaultCacheDuration)]
-        public ActionResult Blogs() {
-            var blogs = from setting in this.BlogService.Config.BloggerSettings
-                        let info = this.BlogService.GetInfo(setting.BlogKey)
-                        orderby info.Title ascending
-                        select info;
+        public ActionResult Blogs()
+        {
+            var blogs = BlogService.GetInfo();
 
             return PartialView(blogs);
         }
 
         [OutputCache(Duration = DefaultCacheDuration)]
         public ActionResult Tags() {
-            var tags = this.BlogService.GetTagsCount();
+            var tags = this.BlogService.GetTagsMeta();
 
             return PartialView(tags);
         }
@@ -37,48 +38,54 @@ namespace Cinteros.Web.Blogs.Website.Controllers {
         public static readonly string MenuItemsCacheKey = "InfoController.MenuItems.LastUpdate";
 
         [OutputCache(Duration = DefaultCacheDuration)]
-        public ActionResult MenuItems() {
-            var storeMenuItems = new List<MenuItem>(0);
+        public ActionResult MenuItems()
+        {
+            //var storeMenuItems = new List<MenuItem>(0);
 
-            var lastUpdate = (this.HttpContext.Cache[MenuItemsCacheKey] as DateTime?).GetValueOrDefault(DateTime.MinValue);
-            
-            var store = this.BlogService.DocumentStore;
-            using(var session = store.OpenSession()) {
-                if(lastUpdate.AddHours(8) < DateTime.Now) {
-                    var storeHasData = session.Query<MenuItem>().Any();
+            //var lastUpdate = (this.HttpContext.Cache[MenuItemsCacheKey] as DateTime?).GetValueOrDefault(DateTime.MinValue);
 
-                    var task = new Task(() => {
-                        var cinterosMenuItems = GetCinterosMenuItems();
+            //var store = this.BlogService.DocumentStore;
+            //using (var session = store.OpenSession())
+            //{
+            //    if (lastUpdate.AddHours(8) < DateTime.Now)
+            //    {
+            //        var storeHasData = session.Query<MenuItem>().Any();
 
-                        if(cinterosMenuItems.Any()) {
-                            session.Query<MenuItem>().Take(int.MaxValue).ToList().ForEach(x => session.Delete(x));
+            //        var task = new Task(() =>
+            //        {
+            //            var cinterosMenuItems = GetCinterosMenuItems();
 
-                            session.SaveChanges();
-                        }
+            //            if (cinterosMenuItems.Any())
+            //            {
+            //                session.Query<MenuItem>().Take(int.MaxValue).ToList().ForEach(x => session.Delete(x));
 
-                        cinterosMenuItems.ToList().ForEach(x => session.Store(x, Convert.ToString((uint)x.Url.GetHashCode())));
+            //                session.SaveChanges();
+            //            }
 
-                        session.SaveChanges();
-                    });
-                    task.Start();
+            //            cinterosMenuItems.ToList().ForEach(x => session.Store(x, Convert.ToString((uint)x.Url.GetHashCode())));
 
-                    if(!storeHasData) {
-                        task.Wait();
-                    }
-                }
+            //            session.SaveChanges();
+            //        });
+            //        task.Start();
 
-                storeMenuItems = session.Query<MenuItem>().Take(int.MaxValue).OrderBy(x => x.Index).ToList();
-            }
+            //        if (!storeHasData)
+            //        {
+            //            task.Wait();
+            //        }
+            //    }
 
-            this.HttpContext.Cache[MenuItemsCacheKey] = DateTime.Now;
+            //    storeMenuItems = session.Query<MenuItem>().Take(int.MaxValue).OrderBy(x => x.Index).ToList();
+            //}
 
-            return PartialView(storeMenuItems ?? new List<MenuItem>(0));
+            HttpContext.Cache[MenuItemsCacheKey] = DateTime.Now;
+
+            return PartialView(GetCinterosMenuItems());
         }
 
-        private List<MenuItem> GetCinterosMenuItems() {
-            var menuItems = new List<MenuItem>();
-
-            var client = new WebClient() {
+        private List<MenuItem> GetCinterosMenuItems() 
+        {
+            var client = new WebClient
+            {
                 Encoding = System.Text.Encoding.UTF8
             };
             string html = client.DownloadString("http://www.cinteros.se");
@@ -88,14 +95,15 @@ namespace Cinteros.Web.Blogs.Website.Controllers {
 
             var nodes = htmlDocument.DocumentNode.SelectNodes("//ul[@id='menu-cinteros-standard']/li");
 
-            menuItems = (from listItem in nodes
-                         let aTag = listItem.FirstChild
-                         where aTag.Name == "a"
-                         let href = aTag.GetAttributeValue("href", string.Empty)
-                         let linkUrl = GetUrl(href)
-                         where !string.IsNullOrWhiteSpace(href)
-                         select new MenuItem(aTag.InnerText, linkUrl)).ToList();
-            for(int i = 0; i < menuItems.Count; i++) {
+            var menuItems = (from listItem in nodes
+                let aTag = listItem.FirstChild
+                where aTag.Name == "a"
+                let href = aTag.GetAttributeValue("href", string.Empty)
+                let linkUrl = GetUrl(href)
+                where !string.IsNullOrWhiteSpace(href)
+                select new MenuItem(aTag.InnerText, linkUrl)).ToList();
+            for(int i = 0; i < menuItems.Count; i++) 
+            {
                 menuItems[i].Index = i;
             }
 
@@ -114,9 +122,9 @@ namespace Cinteros.Web.Blogs.Website.Controllers {
             return menuItems;
         }
 
-        private static readonly string WebsiteUrl = "http://www.cinteros.se/";
+        private const string WebsiteUrl = "http://www.cinteros.se/";
 
-        private string GetUrl(string href) {
+        private static string GetUrl(string href) {
             if(href.StartsWith(WebsiteUrl)) {
                 return href;
             }

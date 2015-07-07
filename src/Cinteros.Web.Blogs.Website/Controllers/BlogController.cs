@@ -4,13 +4,15 @@ using System.Web.Mvc;
 
 using Cinteros.Web.Blogs.Website.Models;
 
-namespace Cinteros.Web.Blogs.Website.Controllers {
-    public class BlogController : BaseController {
-        [OutputCache(Duration = DefaultCacheDuration, VaryByParam = "year;month;page", VaryByCustom = "RavenDbStaleIndexes")]
-        public ActionResult Archive(int year, int month, int? page = 1) {
-            int pageIndex = page.GetValueOrDefault(1) - 1; // Given pageIndex is user-friendly, not 0-based
-            
-            var selection = this.BlogService.GetArchiveSelection(new DateTime(year, month, 1), pageIndex);
+namespace Cinteros.Web.Blogs.Website.Controllers
+{
+    public class BlogController : BaseController
+    {
+        public ActionResult Archive(int year, int month, int? page = 1)
+        {
+            var pageIndex = page.GetValueOrDefault(1) - 1; 
+
+            var selection = BlogService.GetArchivePosts(new DateTime(year, month, 1), pageIndex);
 
             var model = new BlogListViewModel { Selection = selection, PageIndex = page.GetValueOrDefault(1), };
 
@@ -18,23 +20,23 @@ namespace Cinteros.Web.Blogs.Website.Controllers {
             return View("List", model);
         }
 
-        [OutputCache(Duration = DefaultCacheDuration, VaryByParam = "page", VaryByCustom = "RavenDbStaleIndexes")]
-        public ActionResult Index(int? page = 1) {
-            int pageIndex = page.GetValueOrDefault(1) - 1; // Given pageIndex is user-friendly, not 0-based
+        public ActionResult Index(int? page = 1)
+        {
+            var pageIndex = page.GetValueOrDefault(1) - 1; 
 
-            var selection = this.BlogService.GetSelection(pageIndex);
+            var selection = BlogService.GetPosts(pageIndex);
 
-            var model = new BlogListViewModel { Selection = selection, PageIndex = page.GetValueOrDefault(1), };
+            var model = new BlogListViewModel { Selection = selection, PageIndex = page.GetValueOrDefault(1) };
 
             ViewBag.Title = "Senaste inläggen";
             return View("List", model);
         }
 
-        [OutputCache(Duration = DefaultCacheDuration, VaryByParam = "q;page", VaryByCustom = "RavenDbStaleIndexes")]
-        public ActionResult Search(string q, int? page = 1) {
-            int pageIndex = page.GetValueOrDefault(1) - 1; // Given pageIndex is user-friendly, not 0-based
+        public ActionResult Search(string q, int? page = 1)
+        {
+            var pageIndex = page.GetValueOrDefault(1) - 1; 
 
-            var selection = this.BlogService.SearchPosts(q, pageIndex);
+            var selection = BlogService.SearchPosts(q, pageIndex);
 
             var model = new BlogListViewModel { Selection = selection, PageIndex = page.GetValueOrDefault(1), };
 
@@ -42,12 +44,12 @@ namespace Cinteros.Web.Blogs.Website.Controllers {
             return View("List", model);
         }
 
-        [OutputCache(Duration = DefaultCacheDuration, VaryByParam = "t;page", VaryByCustom = "RavenDbStaleIndexes")]
-        public ActionResult Tag(string t, int? page = 1) {
+        public ActionResult Tag(string t, int? page = 1)
+        {
             t = HttpUtility.UrlDecode(t);
-            int pageIndex = page.GetValueOrDefault(1) - 1; // Given pageIndex is user-friendly, not 0-based
+            var pageIndex = page.GetValueOrDefault(1) - 1; 
 
-            var selection = this.BlogService.GetTagsSelection(t, pageIndex);
+            var selection = BlogService.GetTagPosts(t, pageIndex);
 
             var model = new BlogListViewModel { Selection = selection, PageIndex = page.GetValueOrDefault(1), };
 
