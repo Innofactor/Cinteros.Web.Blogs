@@ -31,7 +31,10 @@ namespace Blogger.DataSource
         {
 
             var blogPosts = !string.IsNullOrWhiteSpace(query) ?
-                _repository.SearchBlogPosts(query).ToList() : _repository.GetBlogPosts().ToList();
+                _repository.SearchBlogPosts(query).ToList() : _repository
+                .GetBlogPosts()
+                .OrderByDescending(x => x.Published)
+                .ToList();
 
             var postCollection = new BlogPostCollection(blogPosts, pageIndex, 10);
             return postCollection;
